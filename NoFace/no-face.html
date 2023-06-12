@@ -4,9 +4,6 @@
 <head>
     <meta charset="UTF-8">
     <title>Webcam Image Capture</title>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.13.0"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
 
     <style>
@@ -23,102 +20,13 @@
             padding: 10px;
         }
     </style>
-    <script>
-        $(document).ready(function() {
-            // Get the video element and canvas element
-            var video = document.getElementById('video');
-            var canvas = document.getElementById('canvas');
-            var context = canvas.getContext('2d');
-
-            // Variables for face detection
-            let model, faces;
-            var lastCaptureTime = 0;
-            let num = 0;
-            let aud = 1;
-            let warning;
-
-            // Variables for frequency detection
-            var audioContext, analyser, dataArray, soundDetected;
-            const MIN_FREQUENCY = 10;
-            const MAX_FREQUENCY = 4000;
-
-            // Load the face detection model
-            async function loadFaceDetectionModel() {
-                model = await blazeface.load();
-            }
-
-            // Start the video stream and face detection
-            async function startVideoStream() {
-                if (navigator.mediaDevices.getUserMedia) {
-                    const stream = await navigator.mediaDevices.getUserMedia({
-                        video: true
-                    });
-                    video.srcObject = stream;
-                    video.addEventListener('loadeddata', detectFaces); // Wait for the video to finish loading
-
-                }
-            }
-            async function detectFaces() {
-                faces = await model.estimateFaces(video);
-                var currentTime = Date.now();
-                if ((faces.length === 0 || faces.length > 1) && (currentTime - lastCaptureTime > 5000)) {
-                    // Show warning message
-                    if (faces.length === 0) {
-                        showWarning("No face detected");
-                        warning = "No face detected";
-                    } 
-                    captureImage(warning);
-                    lastCaptureTime = currentTime;
-                }
-                requestAnimationFrame(detectFaces);
-            }
-
-            // Show warning message
-            function showWarning(message) {
-                $('.warning').html(message);
-                $('.warning').show();
-                setTimeout(function() {
-                    $('.warning').hide();
-                }, 3000);
-            }
-            // Capture image and send to the server
-            function captureImage(reason) {
-                // Draw the current video frame onto the canvas
-                context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-                // Get the base64-encoded image data from the canvas
-                var imageData = canvas.toDataURL('image/png');
-                ++num;
-                // Create the JSON object with image information
-                var imageInfo = {
-                    id: num,
-                    name: reason,
-                    warning: reason
-                };
-
-                // Send the image data and JSON object to the server using AJAX
-                $.ajax({
-                    type: 'POST',
-                    url: 'process_image.php',
-                    data: {
-                        image: imageData,
-                        info: JSON.stringify(imageInfo)
-                    },
-                    success: function(response) {
-                        console.log('Image captured and sent to the server.');
-                        console.log(response);
-                        $('.num').html(num);
-                    }
-                });
-            }
-
-            // Initialize the face detection model and start the video stream
-            loadFaceDetectionModel().then(startVideoStream);
-        });
-    </script>
 </head>
 
 <body>
+    <script src="jquery.min.js"></script>
+    <script src="script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.13.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface"></script>
     <center>
         <h1>Webcam Image Capture</h1>
         <span class='warning'></span>

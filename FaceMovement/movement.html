@@ -4,12 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Webcam Image Capture</title>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.13.0"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css"
         integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
-
     <style>
         .warning {
             background-color: red;
@@ -17,123 +13,21 @@
             padding: 10px;
             display: none;
         }
+
         .num {
             background-color: red;
             color: white;
             padding: 10px;
         }
     </style>
-    <script>
-        $(document).ready(function () {
-            // Get the video element and canvas element
-            var video = document.getElementById('video');
-            var canvas = document.getElementById('canvas');
-            var context = canvas.getContext('2d');
-
-            // Variables for face detection
-            let model, faces;
-            var lastCaptureTime = 0;
-            let num = 0;
-            let aud = 1;
-            let warning;
-
-            // Load the face detection model
-            async function loadFaceDetectionModel() {
-                model = await blazeface.load();
-            }
-
-            // Start the video stream and face detection
-            async function startVideoStream() {
-                if (navigator.mediaDevices.getUserMedia) {
-                    const stream = await navigator.mediaDevices.getUserMedia({
-                        video: true
-                    });
-                    video.srcObject = stream;
-                    video.addEventListener('loadeddata', detectFaces); // Wait for the video to finish loading
-
-                }
-            }
-            function detectDistraction() {
-                if (faces.length === 1) {
-                    var landmarks = faces[0].landmarks;
-                    var leftEye = landmarks[0];
-                    var rightEye = landmarks[1];
-                    var nose = landmarks[2];
-                    var leftEyeX = leftEye[0];
-                    var leftEyeY = leftEye[1];
-                    var rightEyeX = rightEye[0];
-                    var rightEyeY = rightEye[1];
-                    var noseX = nose[0];
-                    var noseY = nose[1];
-
-                    // Calculate the distance between the eyes and nose
-                    var eyeNoseDist = Math.sqrt(Math.pow(noseX - ((leftEyeX + rightEyeX) / 2), 2) + Math.pow(noseY - ((leftEyeY + rightEyeY) / 2), 2));
-
-                    // Calculate the horizontal distance between the eyes
-                    var eyeDistX = rightEyeX - leftEyeX;
-
-                    // Calculate the vertical distance between the eyes
-                    var eyeDistY = rightEyeY - leftEyeY;
-
-                    // Calculate the angle between the eyes and the nose (in degrees)
-                    var angle = Math.atan2(eyeDistY, eyeDistX) * (180 / Math.PI);
-
-                    // Set the distance threshold
-                    var distanceThreshold = 10; // Adjust this value based on your requirements
-
-                    // Set the angle threshold
-                    var angleThreshold = 120; // Adjust this value based on your requirements
-
-                    // Set the X coordinate threshold for detecting left or right rotation
-                    var rotationThreshold = 10;  // Adjust this value based on your requirements
-
-                    // Calculate the angle between the eyes and the reference line
-                    var referenceLineSlope = (rightEyeY - leftEyeY) / (rightEyeX - leftEyeX);
-                    var referenceLineAngle = Math.atan(referenceLineSlope) * (180 / Math.PI);
-
-                    // Set the angle threshold for detecting left or right rotation
-                    var rotationThreshold = 10; // Adjust this value based on your requirements
-
-                    // Check if the face is rotated to the left
-                    if (referenceLineAngle > rotationThreshold) {
-                        showWarning("Face rotated left");
-                    }
-                    // Check if the face is rotated to the right
-                    else if (referenceLineAngle < -rotationThreshold) {
-                        showWarning("Face rotated right");
-                    }
-                    // Check if the face is tilted up
-                    else if (eyeNoseDist < distanceThreshold && angle > -angleThreshold && angle < angleThreshold) {
-                        showWarning("Face tilted up");
-                    }
-                }
-            }
-
-            // Detect faces in the video stream
-            async function detectFaces() {
-                faces = await model.estimateFaces(video);
-                var currentTime = Date.now();
-                detectDistraction(); // Call the detectDistraction function
-                requestAnimationFrame(detectFaces);
-            }
-
-            // Show warning message
-            function showWarning(message) {
-                $('.warning').html(message);
-                $('.warning').show();
-                setTimeout(function () {
-                    $('.warning').hide();
-                }, 1000);
-            }
-
-
-            // Initialize the face detection model and start the video stream
-            loadFaceDetectionModel().then(startVideoStream);
-        });
-    </script>
 </head>
 
 <body>
+    <script src="script.js"></script>
+    <script src="jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.13.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface"></script>
+
     <center>
         <h1>Webcam Image Capture</h1>
         <span class='warning'></span>
@@ -142,12 +36,6 @@
         <br>
         <span class='num'></span>
     </center>
-    <br>
-    <a href="multi.html">\ Multi face /</a>
-    <a href="movement.html">\ Face movement /</a>
-    <a href="no-face.html">\ No Face /</a>
-    <br>
-    <canvas id="canvas" width="320" height="240"></canvas>
     <br>
 </body>
 
